@@ -4,7 +4,8 @@
 This script downloads current source playlists, preserves their channel metadata,
 removes duplicate stream URLs and publishes full and sports-only M3U files.
 Only English/Malay language-tagged streams with recognised American/British
-network brands or show titles are published. Name based, not geo based.
+network brands or show titles are published, excluding news, business-news,
+weather and music channels. Name based, not geo based.
 Stream health is determined by the upstream provider, not rechecked here.
 """
 
@@ -52,6 +53,20 @@ SPORTS_RE = re.compile(
     r"\b(sport|sports|football|soccer|cricket|tennis|racing|formula\s*1|"
     r"motorsport|basketball|baseball|rugby|golf|boxing|mma|nba|nfl|nhl|"
     r"mlb|f1|espn|eurosport|bein)\b",
+    re.IGNORECASE,
+)
+# News and music entries can be miscategorized as entertainment or documentary.
+# Also exclude business-news, weather reports and radio stations.
+EXCLUDED_GROUP_RE = re.compile(r"\b(?:news|music|radio|business|weather)\b", re.IGNORECASE)
+EXCLUDED_NAME_RE = re.compile(
+    r"\b(?:news|newscast|newsmax|radio|vevo)\b"
+    r"|^(?:cnn\b|cnbc\b|fox business\b|bloomberg tv\b|"
+    r"schwab network\b|ameritrade\b|yahoo!? finance\b|"
+    r"business rockstars\b|ms now\b|oan\b|one america news\b|"
+    r"the weather channel\b|weathernation\b|fox weather\b|court tv\b|"
+    r"mtv(?:$|\s+(?:live|global|music|spankin|classic|hits|dance|80s|90s|2k)\b)|"
+    r"vh1(?:$|\s+(?:live|music|classic|hits)\b)|"
+    r"cmt(?:v)?(?:$|\s)|the country network\b)",
     re.IGNORECASE,
 )
 
@@ -139,6 +154,23 @@ def is_us_uk_named_channel(channel: Channel, patterns: tuple[str, ...]) -> bool:
                 return True
             if label == pattern:
                 return True
+    return False
+
+
+def is_news_or_music(channel: Channel) -> bool:
+    """Exclude news/music even when providers mislabeled the channel category.
+
+    Matches the category and actual channel names, not network origin.
+    Show-specific channels such as MTV Jersey Shore remain if entertainment.
+    """
+    if EXCLUDED_GROUP_RE.search(channel.group):
+        return True
+    match = TVG_NAME_RE.search(channel.extinf)
+    labels = (channel.name, match.group(1) if match else channel.name)
+    for label in labels:
+        normalized = QUALITY_SUFFIX_RE.sub("", label).strip()
+        if EXCLUDED_NAME_RE.search(normalized):
+            return True
     return False
 
 
@@ -262,6 +294,7 @@ def build() -> tuple[int, int, int]:
     missing_language_metadata = 0
     excluded_mixed_language = 0
     name_filtered_out = 0
+    news_music_filtered_out = 0
 
     for source in sources:
         try:
@@ -279,6 +312,9 @@ def build() -> tuple[int, int, int]:
                     continue
                 if not is_us_uk_named_channel(channel, name_allowlist):
                     name_filtered_out += 1
+                    continue
+                if is_news_or_music(channel):
+                    news_music_filtered_out += 1
                     continue
                 if channel.url in seen_urls:
                     continue
@@ -312,7 +348,8 @@ def build() -> tuple[int, int, int]:
     LOG.info(
         "Generated %d English/Malay US/UK-named streams (%d sports) from %d feeds; "
         "excluded %d other/unknown-language entries (%d multilingual, %d missing language metadata), "
-        "plus %d entries without recognised US/UK network or show names",
+        "plus %d entries without recognised US/UK network or show names, "
+        "and %d entries from news, music, business-news or weather channels",
         len(combined),
         len(sports),
         sources_loaded,
@@ -320,6 +357,7 @@ def build() -> tuple[int, int, int]:
         excluded_mixed_language,
         missing_language_metadata,
         name_filtered_out,
+        news_music_filtered_out,
     )
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary_path:
@@ -334,7 +372,10 @@ def build() -> tuple[int, int, int]:
                 f"{missing_language_metadata:,} without language tags).\n\n"
                 f"Excluded **{name_filtered_out:,}** additional channels without recognized "
                 "American/British network or show names.\n\n"
-                "Only English/Malay-tagged channels matching the curated US/UK name allowlist are included. "
+                f"Excluded **{news_music_filtered_out:,}** news, music, "
+                "business-news, radio or weather streams.\n\n"
+                "Only English/Malay-tagged entertainment, movies, sports and other "
+                "non-news/music channels matching the curated US/UK name allowlist are included. "
                 "Playlist URLs may still be restricted by location or provider.\n\n"
             )
     return sources_loaded, len(combined), len(sports)
