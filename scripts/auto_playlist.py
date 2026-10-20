@@ -47,7 +47,7 @@ NON_ENGLISH_TITLE_RE = re.compile(
     re.IGNORECASE,
 )
 QUALITY_SUFFIX_RE = re.compile(r"\s*\(\s*(?:\d{3,4}[pi]|4k)\s*\)\s*$", re.IGNORECASE)
-TVG_NAME_RE = re.compile(r"""(?:^|\s)tvg-name="([^"]*)"""", re.IGNORECASE)
+TVG_NAME_RE = re.compile(r'tvg-name="([^"]*)"', re.IGNORECASE)
 SPORTS_RE = re.compile(
     r"\b(sport|sports|football|soccer|cricket|tennis|racing|formula\s*1|"
     r"motorsport|basketball|baseball|rugby|golf|boxing|mma|nba|nfl|nhl|"
