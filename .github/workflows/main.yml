@@ -125,6 +125,52 @@ jobs:
             --pages-base-url "${{ steps.generate.outputs.pages_base_url }}"
           echo "final_file=$final_file" >> "$GITHUB_OUTPUT"
 
+      # GitHub Pages does not allow custom Cache-Control response headers.
+      # Use a NEW pathname per run so CDNs and IPTV apps cannot reuse
+      # an older response cached for the canonical result.m3u URL.
+      - name: Create versioned fresh playlist URLs
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          PAGES_BASE: ${{ steps.generate.outputs.pages_base_url }}
+        run: |
+          python - <<'PY'
+          import os
+          import re
+          import shutil
+          from pathlib import Path
+
+          tag = os.environ["RELEASE_TAG"]
+          if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", tag):
+              raise ValueError("Invalid release tag for a versioned playlist path")
+          root = Path("pages-site")
+          version_dir = root / "versions" / tag
+          version_dir.mkdir(parents=True, exist_ok=False)
+          files = []
+          for filename in ("result.m3u", "sports.m3u"):
+              source = root / filename
+              if source.is_file() and not source.is_symlink():
+                  destination = version_dir / filename
+                  shutil.copyfile(source, destination)
+                  if destination.read_bytes() != source.read_bytes():
+                      raise RuntimeError(f"Versioned playlist differs: {filename}")
+                  files.append(filename)
+          if "result.m3u" not in files:
+              raise RuntimeError("Versioned main playlist was not created")
+
+          base = os.environ["PAGES_BASE"].rstrip("/")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write(
+                  "### Fresh playlist URLs (new, uncached path per generation)\n\n"
+              )
+              for filename in files:
+                  summary.write(f"- {base}/versions/{tag}/{filename}\n")
+              summary.write(
+                  "\nOlder GitHub Pages URLs may be cached by the browser or IPTV player. "
+                  "GitHub Pages does not support custom no-store headers. "
+                  "Use the new versioned URL when a client insists on showing stale channels.\n\n"
+              )
+          PY
+
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
@@ -183,9 +229,11 @@ jobs:
             echo "- Pages TXT: $PAGES_BASE/result.txt"
             if [[ -f release-assets/result.m3u ]]; then
               echo "- Pages M3U: $PAGES_BASE/result.m3u"
+              echo "- Fresh versioned M3U: $PAGES_BASE/versions/${{ steps.release.outputs.tag }}/result.m3u"
             fi
             if [[ -f release-assets/sports.m3u ]]; then
               echo "- Pages Sports M3U: $PAGES_BASE/sports.m3u"
+              echo "- Fresh versioned Sports M3U: $PAGES_BASE/versions/${{ steps.release.outputs.tag }}/sports.m3u"
             fi
             if [[ -f release-assets/epg.gz ]]; then
               echo "- Pages EPG: $PAGES_BASE/epg.gz"
