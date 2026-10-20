@@ -1,0 +1,104 @@
+# Channels and TV shows excluded even when tagged Entertainment, Series or Sports.
+# Prevent reality television, factual crime magazines, live talk, and disguised news.
+# Patterns match channel/show names, NOT stream location or country.
+# Case-insensitive. An asterisk is supported ONLY at the end for name prefixes.
+# To permanently remove another channel, add its name below.
+#
+# Current exclusions reviewed against the published 385-stream result.m3u.
+
+# News, investigative newsmagazines, sports/entertainment news, talk programming
+48 Hours*
+Dateline*
+CBS Sports HQ*
+SportsGrid*
+Fox Soul*
+NBCLX*
+NBC LX*
+Bloomberg Originals*
+Made In Hollywood*
+Entertainment Tonight*
+The Doctors*
+Best of Dr Phil*
+Best of The Drew Barrymore Show*
+The Graham Norton Show*
+NBC Sports NOW*
+DraftKings Network*
+talkSPORT*
+
+# Reality, unscripted competitions, game shows, daytime courtroom
+A&E*
+E!*
+OWN*
+WE TV*
+TLC*
+HGTV*
+All Reality by WE TV*
+All Weddings WE TV*
+America's Next Top Model*
+Bar Rescue*
+Big Brother*
+Black Ink Crew*
+DCC: Making the Team*
+Deal or No Deal*
+Dog the Bounty Hunter*
+Dog Whisperer*
+Don't Tell The Bride*
+Duck Dynasty*
+Fear Factor*
+Game Show Central*
+Game Show Network*
+Gordon Ramsay's Hell's Kitchen*
+Hell's Kitchen*
+Hot Bench*
+Ink Master*
+Jersey Shore*
+MTV Jersey Shore*
+Judge Judy*
+Nosey*
+Paranormal State*
+PBS Antiques Roadshow*
+Pluto TV Storage Wars*
+Pluto TV Wipeout*
+Ridiculousness*
+Survivor*
+The Amazing Race*
+The Challenge*
+The Judge Judy Channel*
+The Price Is Right*
+Tiny House Nation*
+Wipeout*
+VH1 Queens of Reality*
+Wild 'N Out*
+Hard Knocks*
+
+# Docu-reality / police / crime / paranormal unscripted series
+American Crime Channel*
+Buzzfeed Unsolved*
+Cold Case Files*
+Cops*
+Crime + Investigation*
+Crime 360*
+Deadly Women*
+FBI Files*
+FilmRise Forensic Files*
+Ghost Dimension*
+Ghost Hunters*
+Investigation Discovery*
+Pluto TV True Crime*
+The New Detectives*
+True Crime*
+Unsolved Mysteries*
+
+# Unscripted property/lifestyle/competition networks and shows
+BBC Home & Garden*
+Discovery Turbo*
+Food Network*
+Home.Made.Nation*
+Homes Under Hammer*
+NBC LX Home*
+The Design Network*
+This Old House*
+Travel Channel*
+Antiques Roadshow*
+AFV*
+Mythbusters*
