@@ -70,17 +70,22 @@ class Channel:
 
     @property
     def is_preferred_language(self) -> bool:
-        # An unknown language is not evidence that a channel broadcasts
-        # in English or Malay. Avoid country/name-based guesses.
-        for language in self.languages:
+        # Require EVERY advertised language to be English or Malay. The
+        # previous any(...) logic wrongly retained multilingual broadcasts,
+        # e.g. eng;spa, ara;eng and hin;eng.
+        # Missing language metadata is not sufficient evidence to include.
+        languages = self.languages
+        if not languages:
+            return False
+        for language in languages:
             canonical = re.sub(r"\s*\([^)]*\)\s*$", "", language).strip()
             if canonical in ALLOWED_LANGUAGES:
-                return True
-            # Accept ISO tags such as en-US and ms-MY without accepting
-            # unrelated full language names (e.g. Malayalam or Malaysian).
+                continue
+            # Accept locale suffixes, e.g. en-US or ms-MY.
             if canonical.split("-", 1)[0] in ALLOWED_LANGUAGES:
-                return True
-        return False
+                continue
+            return False
+        return True
 
 
 def is_http_url(value: str) -> bool:
@@ -199,6 +204,7 @@ def build() -> tuple[int, int, int]:
     sources_loaded = 0
     language_filtered_out = 0
     missing_language_metadata = 0
+    excluded_mixed_language = 0
 
     for source in sources:
         try:
@@ -211,6 +217,8 @@ def build() -> tuple[int, int, int]:
                     language_filtered_out += 1
                     if not channel.languages:
                         missing_language_metadata += 1
+                    else:
+                        excluded_mixed_language += 1
                     continue
                 if channel.url in seen_urls:
                     continue
@@ -243,11 +251,12 @@ def build() -> tuple[int, int, int]:
 
     LOG.info(
         "Generated %d English/Malay streams (%d sports) from %d feeds; "
-        "excluded %d other/unknown-language entries (%d missing language metadata)",
+        "excluded %d other/unknown-language entries (%d multilingual, %d missing language metadata)",
         len(combined),
         len(sports),
         sources_loaded,
         language_filtered_out,
+        excluded_mixed_language,
         missing_language_metadata,
     )
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
@@ -259,8 +268,9 @@ def build() -> tuple[int, int, int]:
                 f"collected **{len(combined):,}** unique stream URLs, "
                 f"including **{len(sports):,}** sports entries.\n\n"
                 f"Excluded **{language_filtered_out:,}** foreign or unknown-language entries "
-                f"({missing_language_metadata:,} without language tags).\n\n"
-                "Only channels explicitly tagged English or Malay are included. "
+                f"({excluded_mixed_language:,} advertising other languages; "
+                f"{missing_language_metadata:,} without language tags).\n\n"
+                "Only channels whose entire language list is English and/or Malay are included. "
                 "Playlist URLs may still be restricted by location or provider.\n\n"
             )
     return sources_loaded, len(combined), len(sports)
