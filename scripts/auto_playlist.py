@@ -4,8 +4,8 @@
 This script downloads current source playlists, preserves their channel metadata,
 removes duplicate stream URLs and publishes full and sports-only M3U files.
 Only English/Malay language-tagged streams with recognised American/British
-network brands or show titles are published, excluding news, business-news,
-weather and music channels. Name based, not geo based.
+network brands or show titles are published, excluding news, music and reality
+TV even when mislabelled as Entertainment or Series. Name based, not geo based.
 Stream health is determined by the upstream provider, not rechecked here.
 """
 
@@ -29,6 +29,7 @@ OUTPUT_DIRECTORY = Path("output")
 MAX_DOWNLOAD_BYTES = 40 * 1024 * 1024
 EPG_URL = "https://dearbulut.github.io/iptv/epg/guide.xml.gz"
 NAME_ALLOWLIST_FILE = Path("config/us_uk_name_allowlist.txt")
+EXCLUDED_NAMES_FILE = Path("config/excluded_channels.txt")
 GROUP_RE = re.compile(r'group-title="([^"]*)"', re.IGNORECASE)
 LANGUAGE_RE = re.compile(
     r"""(?:^|\s)(?:tvg-language|language)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s,]+))""",
@@ -122,7 +123,7 @@ def read_name_allowlist(path: Path) -> tuple[str, ...]:
     Unlike a fuzzy classifier, unfamiliar names are excluded by default.
     """
     if not path.is_file():
-        raise FileNotFoundError(f"Channel name allowlist is missing: {path}")
+        raise FileNotFoundError(f"Channel name pattern file is missing: {path}")
     patterns: list[str] = []
     for raw in path.read_text(encoding="utf-8-sig").splitlines():
         pattern = raw.strip().casefold()
@@ -171,6 +172,23 @@ def is_news_or_music(channel: Channel) -> bool:
         normalized = QUALITY_SUFFIX_RE.sub("", label).strip()
         if EXCLUDED_NAME_RE.search(normalized):
             return True
+    return False
+
+
+def is_excluded_named_channel(channel: Channel, patterns: tuple[str, ...]) -> bool:
+    """Block known news/reality show brands independent of feed group metadata.
+
+    Prefix patterns match the full channel or show name (not its URL or country).
+    """
+    match = TVG_NAME_RE.search(channel.extinf)
+    labels = (channel.name, match.group(1) if match else channel.name)
+    for label in labels:
+        normalized = QUALITY_SUFFIX_RE.sub("", label).strip().casefold()
+        for pattern in patterns:
+            if pattern.endswith("*") and normalized.startswith(pattern[:-1]):
+                return True
+            if normalized == pattern:
+                return True
     return False
 
 
@@ -285,7 +303,13 @@ def write_txt(path: Path, channels: list[Channel]) -> None:
 def build() -> tuple[int, int, int]:
     sources = read_sources(SOURCE_FILE)
     name_allowlist = read_name_allowlist(NAME_ALLOWLIST_FILE)
-    LOG.info("US/UK name allowlist loaded: %d patterns (source country is ignored)", len(name_allowlist))
+    excluded_names = read_name_allowlist(EXCLUDED_NAMES_FILE)
+    LOG.info(
+        "US/UK name allowlist loaded: %d patterns; news/reality denylist: %d patterns "
+        "(source country is ignored)",
+        len(name_allowlist),
+        len(excluded_names),
+    )
     LOG.info("Loading %d playlist sources", len(sources))
     combined: list[Channel] = []
     seen_urls: set[str] = set()
@@ -295,6 +319,7 @@ def build() -> tuple[int, int, int]:
     excluded_mixed_language = 0
     name_filtered_out = 0
     news_music_filtered_out = 0
+    reality_and_news_named_out = 0
 
     for source in sources:
         try:
@@ -315,6 +340,9 @@ def build() -> tuple[int, int, int]:
                     continue
                 if is_news_or_music(channel):
                     news_music_filtered_out += 1
+                    continue
+                if is_excluded_named_channel(channel, excluded_names):
+                    reality_and_news_named_out += 1
                     continue
                 if channel.url in seen_urls:
                     continue
@@ -349,7 +377,8 @@ def build() -> tuple[int, int, int]:
         "Generated %d English/Malay US/UK-named streams (%d sports) from %d feeds; "
         "excluded %d other/unknown-language entries (%d multilingual, %d missing language metadata), "
         "plus %d entries without recognised US/UK network or show names, "
-        "and %d entries from news, music, business-news or weather channels",
+        "and %d entries from news, music, business-news or weather channels, "
+        "plus %d reality/news show titles",
         len(combined),
         len(sports),
         sources_loaded,
@@ -358,6 +387,7 @@ def build() -> tuple[int, int, int]:
         missing_language_metadata,
         name_filtered_out,
         news_music_filtered_out,
+        reality_and_news_named_out,
     )
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary_path:
@@ -374,8 +404,10 @@ def build() -> tuple[int, int, int]:
                 "American/British network or show names.\n\n"
                 f"Excluded **{news_music_filtered_out:,}** news, music, "
                 "business-news, radio or weather streams.\n\n"
-                "Only English/Malay-tagged entertainment, movies, sports and other "
-                "non-news/music channels matching the curated US/UK name allowlist are included. "
+                f"Excluded **{reality_and_news_named_out:,}** additional reality shows, "
+                "competitions, docu-reality, newsmagazines and other unwanted titles.\n\n"
+                "Only English/Malay-tagged non-news, non-music, non-reality "
+                "channels matching the curated US/UK name allowlist are included. "
                 "Playlist URLs may still be restricted by location or provider.\n\n"
             )
     return sources_loaded, len(combined), len(sports)
