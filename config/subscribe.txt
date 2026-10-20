@@ -1,12 +1,9 @@
-# 这是订阅源列表，每行一个订阅地址
-# 支持设置UA：https://xxx.com/subscribe.m3u UA="xxx"
-# This is a list of subscription sources, with one subscription address per line
-# Supports setting UA: https://xxx.com/subscribe.m3u UA="xxx"
+# IPTV Nexus: recently health-checked channels (all categories, including sports).
+# iptv-org: supplementary sports channels.
+# This list is fetched on demand by scripts/auto_playlist.py.
 
-
-
-
+https://dearbulut.github.io/iptv/playlists/online.m3u
+https://iptv-org.github.io/iptv/categories/sports.m3u
 
 [WHITELIST]
-# 以下是订阅源的白名单，白名单内的订阅源获取的接口将不会参与测速，始终保留至结果最前。
-# This is the whitelist for subscription sources. Subscription sources in the whitelist will not participate in speed testing and will always be retained at the front of the results.
+# Sources after this marker are supported by the original Guovin engine.
