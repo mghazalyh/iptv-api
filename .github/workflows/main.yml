@@ -90,6 +90,9 @@ jobs:
           pipenv --python 3.14
           pipenv install --deploy
 
+      - name: Verify language and US/UK channel name filters
+        run: python -m unittest discover -s tests -p 'test_auto_playlist_names.py' -v
+
       - name: Aggregate IPTV Nexus and sports feeds
         id: generate
         env:
