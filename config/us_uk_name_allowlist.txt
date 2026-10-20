@@ -1,0 +1,347 @@
+# American/British-branded TV channel names and original English-language show titles.
+# The stream's hosting country and tvg-country metadata are NOT used.
+# Name matching is case-insensitive. A trailing * matches brand variants.
+# Entries are ALSO required to pass the existing strict English/Malay language filter.
+# Add individual TV/show titles here later without changing the Python code.
+# Keep this list conservative: a name alone cannot prove a programme's nationality.
+
+# Broadcast networks, news, entertainment and sports brands
+A&E*
+ABC News*
+ACC Network*
+ACC Digital Network*
+AMC*
+BBC*
+BET*
+Blaze Live*
+Bloomberg*
+BritBox*
+British Comedy*
+CBS*
+CNBC*
+CNN*
+Comedy Central*
+Court TV*
+Discovery*
+E!*
+ESPN*
+FOX*
+Food Network*
+GB News*
+GREAT!*
+Hallmark*
+HBO*
+HGTV*
+History*
+ION*
+ITV*
+Laff*
+MeTV*
+MS NOW*
+MTV*
+NBC*
+Newsmax*
+OAN*
+One America News*
+OWN*
+Paramount*
+PBS*
+Sky News*
+Sky Sports*
+Showtime*
+Smithsonian*
+SYFY*
+TCM*
+TBS*
+TLC*
+TNT*
+Travel Channel*
+TV Land*
+USA TODAY*
+VH1*
+Warner TV*
+WE TV*
+The CW*
+National Geographic*
+Nickelodeon*
+Nick Jr.*
+Nicktoons*
+TeenNick*
+CBBC*
+CBeebies*
+BBC Four/CBeebies*
+The Weather Channel*
+Fox Weather*
+WeatherNation*
+CBS Sports*
+DAZN Combat*
+F1 Channel*
+FIFA+ Women*
+MLB*
+NBA*
+NBC Sports*
+NFL*
+NHL Network*
+PGA Tour*
+Premier Sports*
+SportsGrid*
+Stadium*
+Tennis Channel*
+WWE Network*
+Bellator MMA*
+DraftKings Network*
+FITE 24/7*
+FloHockey*
+FloRacing*
+FUEL TV*
+Hard Knocks*
+Lacrosse TV*
+Monster Jam*
+NHRA TV*
+PBR RidePass*
+PFL MMA*
+Racer Network*
+Racer Select*
+RACER International*
+Swerve Combat*
+Swerve Sports*
+talkSPORT*
+XFC TV*
+
+# American or British show-specific channels, series, and classic sitcoms
+48 Hours*
+AFV*
+All Reality by WE TV*
+All Weddings WE TV*
+America's Next Top Model*
+American Crime Channel*
+Anger Management Channel*
+Antiques Roadshow*
+Anthony Bourdain*
+Are We There Yet?*
+Bar Rescue*
+Battlestar Galactica*
+Baywatch*
+Best of Dr Phil*
+Best of The Drew Barrymore Show*
+Beverly Hillbillies*
+Beverly Hills 90210*
+Beyond Belief: Fact or Fiction*
+Beyond the Gates*
+Big Brother*
+Black Family Sitcoms*
+Black Ink Crew*
+Blue Bloods*
+Bonanza*
+Bounce*
+Buzzfeed Unsolved*
+Cagney & Lacey*
+Charmed*
+Cheers*
+Cheers + Frasier*
+Classic TV*
+Cold Case Files*
+Cops*
+Crime + Investigation*
+CSI*
+Dark Matter TV*
+Dateline*
+Deadly Women*
+DCC: Making the Team*
+Deal or No Deal*
+Designated Survivor*
+Doc Martin*
+Dog the Bounty Hunter*
+Dog Whisperer*
+Don't Tell The Bride*
+Dry Bar Comedy*
+Duck Dynasty*
+Dynasty*
+Electric Now*
+Entertainment Tonight*
+Family Ties*
+Farscape*
+Fear Factor*
+Frasier*
+Game Show Central*
+Game Show Network*
+Ghost Dimension*
+Ghost Hunters*
+Gordon Ramsay*
+Grit Xtra*
+Gunsmoke*
+Happy Days*
+Heartland*
+Hell's Kitchen*
+Highway to Heaven*
+Hogan's Heroes*
+Home.Made.Nation*
+Homes Under Hammer*
+Hot Bench*
+I Love Lucy*
+Ink Master*
+JAG*
+Jersey Shore*
+Judge Judy*
+Married with Children*
+Matlock*
+Midsomer Murders*
+Mission Impossible*
+More TV Crime*
+More TV Drama*
+More TV Sitcoms*
+Mr Bean*
+Mystery Science Theater 3000*
+Mythbusters*
+Nash Bridges*
+Nashville*
+NCIS*
+Nosey*
+Paranormal State*
+PBS Antiques Roadshow*
+PBS Nature*
+Perry Mason*
+Pluto TV FBI*
+Pluto TV Sci-fi Series*
+Pluto TV Sherlock*
+Pluto TV Storage Wars*
+Pluto TV The Twilight Zone*
+Pluto TV True Crime*
+Pluto TV Wipeout*
+Portlandia*
+Rawhide*
+Retro TV*
+Ridiculousness*
+Sabrina The Teenage Witch*
+Sherlock*
+Sitcom Legends*
+SNL Vault*
+South Park*
+Star Trek*
+Start TV*
+Story Television*
+Supernatural Drama*
+Survivor*
+The Addams Family*
+The Amazing Race*
+The Andy Griffith Show*
+The Archive*
+The Beverly Hillbillies*
+The Bob Ross Channel*
+The Carol Burnett Show*
+The Challenge*
+The Conners*
+The Doctors*
+The Graham Norton Show*
+The Judge Judy Channel*
+The Love Boat*
+The Nanny*
+The New Detectives*
+The Price Is Right*
+The Rifleman*
+The Twilight Zone*
+The Walking Dead*
+The Wild Wild West*
+This Old House*
+Three's Company*
+Tiny House Nation*
+Top Gear*
+Tosh.0*
+True Crime*
+Unsolved Mysteries*
+Wanted: Dead or Alive*
+Weeds & Nurse Jackie*
+Wild 'N Out*
+Wild at Heart*
+Wipeout*
+
+# Film, comedy, educational and children's channels with recognisable branding
+50 Cent Action*
+70s Cinema*
+80s Rewind*
+90s Throwback*
+90's Kids*
+90s Kids*
+ABC Kids*
+American Heroes Channel*
+America's Test Kitchen*
+American Horrors*
+Animal Planet*
+ARTFLIX Movie Classics*
+Avatar*
+AXS TV*
+BBC Food*
+BBC Home & Garden*
+BET Cinema*
+BET Comedy Movies*
+BET Throwbacks*
+Brat TV*
+Cartoon Classics*
+Cinevault*
+Cinemax*
+Classic Cinema*
+Classic Movie*
+CMT*
+Comedy Dynamics*
+Create*
+Crime 360*
+Documentary+*
+Dora TV*
+DUST*
+FBI Files*
+FilmRise*
+Flicks of Fury*
+Fox Soul*
+FrightFlix*
+Garfield and Friends*
+GREAT! movies*
+GREAT! romance*
+Hallmark Movies*
+Hasbro Legends*
+History Hit*
+Investigation Discovery*
+LEGO*
+MagellanTV*
+Made In Hollywood*
+Military History*
+Moonbug Kids*
+Movies!*
+NBC Comedy Vault*
+Paramount Movie*
+Paramount+ Picks*
+Peppa Pig*
+Shout! Factory TV*
+Smithsonian Channel*
+Smurf TV*
+SpongeBob*
+Teletubbies*
+TED*
+The Jamie Oliver Channel*
+The Country Network*
+The Design Network*
+Tiny Pop*
+Tom And Jerry*
+Totally Turtles*
+Universal Cinema*
+Universal Comedy*
+Universal Crime*
+Vevo '70s*
+Vevo '80s*
+Vevo '90s*
+Vevo 2K*
+Vevo Country*
+Vevo Hip Hop*
+Vevo Pop*
+Vevo R&B*
+Vevo Retro Rock*
+Vevo True School*
+Wedo Big Stories*
+
+# Familiar US/UK-oriented business/news and shopping brands
+Ameritrade*
+Business Rockstars*
+Cheddar News*
+HSN*
+QVC*
+Schwab Network*
+Yahoo! Finance*
