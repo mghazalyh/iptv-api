@@ -6,6 +6,8 @@ from scripts.auto_playlist import (
     Channel,
     is_us_uk_named_channel,
     is_news_or_music,
+    is_excluded_named_channel,
+    EXCLUDED_NAMES_FILE,
     read_name_allowlist,
     NAME_ALLOWLIST_FILE,
 )
@@ -28,6 +30,7 @@ class NameFilteringTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.patterns = read_name_allowlist(NAME_ALLOWLIST_FILE)
+        cls.excluded = read_name_allowlist(EXCLUDED_NAMES_FILE)
 
     def test_allow_recognisable_british_network(self):
         self.assertTrue(is_us_uk_named_channel(channel("BBC One (720p)"), self.patterns))
@@ -72,6 +75,26 @@ class NameFilteringTest(unittest.TestCase):
 
     def test_keep_non_news_documentary(self):
         self.assertFalse(is_news_or_music(channel("Bloomberg Originals", group="Documentary")))
+
+    def test_reality_is_excluded_even_if_marked_as_series(self):
+        for name in ("Survivor (1080p)", "Big Brother", "The Amazing Race", "MTV Jersey Shore", "Bar Rescue"):
+            with self.subTest(name=name):
+                self.assertTrue(is_excluded_named_channel(channel(name, group="Series"), self.excluded))
+
+    def test_news_programmes_are_excluded_even_if_not_news_category(self):
+        for name in ("48 Hours", "Dateline 24/7", "Bloomberg Originals", "CBS Sports HQ", "Fox Soul"):
+            with self.subTest(name=name):
+                self.assertTrue(is_excluded_named_channel(channel(name, group="Documentary"), self.excluded))
+
+    def test_excludes_true_crime_and_unscripted_shows(self):
+        for name in ("Cops", "FilmRise Forensic Files", "Cold Case Files", "Ghost Hunters", "Mythbusters"):
+            with self.subTest(name=name):
+                self.assertTrue(is_excluded_named_channel(channel(name, group="Series"), self.excluded))
+
+    def test_keep_scripted_tv_films_nature_documentaries_and_live_sport(self):
+        for name in ("Charmed", "Frasier", "BBC One", "National Geographic", "ESPN", "Top Gear", "CSI: Crime Scene Investigation"):
+            with self.subTest(name=name):
+                self.assertFalse(is_excluded_named_channel(channel(name, group="Series"), self.excluded))
 
     def test_keep_strict_language_restriction(self):
         self.assertFalse(channel("BBC One", "eng;spa").is_preferred_language)
