@@ -15,7 +15,10 @@ on:
     paths:
       - '.github/workflows/main.yml'
       - 'config/subscribe.txt'
+      - 'config/excluded_channels.txt'
+      - 'config/us_uk_name_allowlist.txt'
       - 'scripts/auto_playlist.py'
+      - 'tests/test_auto_playlist_names.py'
 
 permissions:
   contents: read
