@@ -1,4 +1,4 @@
-name: Generate playlist manually
+name: Generate IPTV playlists
 
 # ⚠️注意：请不要在 fork 的仓库中添加 `on: schedule` 定时任务（cron）。
 # 生成结果只能通过 Pages Artifact、每次运行独立的 Release 或外部端点发布，不得提交回 Git。
@@ -10,6 +10,12 @@ name: Generate playlist manually
 
 on:
   workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/main.yml'
+      - 'config/subscribe.txt'
+      - 'scripts/auto_playlist.py'
 
 permissions:
   contents: read
@@ -78,23 +84,20 @@ jobs:
           update-environment: true
           cache: pipenv
 
-      - name: Install FFmpeg
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip pipenv
           pipenv --python 3.14
           pipenv install --deploy
 
-      - name: Generate playlist results
+      - name: Aggregate IPTV Nexus and sports feeds
         id: generate
         env:
           PAGES_BASE_URL: ${{ steps.pages.outputs.base_url }}
         run: |
           pages_base_url="${PAGES_BASE_URL%/}"
           echo "pages_base_url=$pages_base_url" >> "$GITHUB_OUTPUT"
-          IPTV_API_ARTIFACT_BASE_URL="$pages_base_url" pipenv run dev
+          python scripts/auto_playlist.py
 
       - name: Create release metadata
         id: release
@@ -178,6 +181,9 @@ jobs:
             if [[ -f release-assets/result.m3u ]]; then
               echo "- Pages M3U: $PAGES_BASE/result.m3u"
             fi
+            if [[ -f release-assets/sports.m3u ]]; then
+              echo "- Pages Sports M3U: $PAGES_BASE/sports.m3u"
+            fi
             if [[ -f release-assets/epg.gz ]]; then
               echo "- Pages EPG: $PAGES_BASE/epg.gz"
             fi
@@ -187,6 +193,9 @@ jobs:
             echo "- Release TXT: $RELEASE_BASE/result.txt"
             if [[ -f release-assets/result.m3u ]]; then
               echo "- Release M3U: $RELEASE_BASE/result.m3u"
+            fi
+            if [[ -f release-assets/sports.m3u ]]; then
+              echo "- Release Sports M3U: $RELEASE_BASE/sports.m3u"
             fi
             if [[ -f release-assets/epg.gz ]]; then
               echo "- Release EPG: $RELEASE_BASE/epg.gz"
