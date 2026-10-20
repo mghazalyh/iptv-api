@@ -3,6 +3,7 @@
 
 This script downloads current source playlists, preserves their channel metadata,
 removes duplicate stream URLs and publishes full and sports-only M3U files.
+Only explicitly English/Malay language-tagged channels are published.
 Stream health is determined by the upstream provider, not rechecked here.
 """
 
@@ -26,6 +27,15 @@ OUTPUT_DIRECTORY = Path("output")
 MAX_DOWNLOAD_BYTES = 40 * 1024 * 1024
 EPG_URL = "https://dearbulut.github.io/iptv/epg/guide.xml.gz"
 GROUP_RE = re.compile(r'group-title="([^"]*)"', re.IGNORECASE)
+LANGUAGE_RE = re.compile(
+    r"""(?:^|\s)(?:tvg-language|language)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s,]+))""",
+    re.IGNORECASE,
+)
+ALLOWED_LANGUAGES = frozenset({
+    "en", "eng", "english",
+    "ms", "msa", "may", "zsm", "malay", "bahasa melayu",
+})
+# In particular, 'mal' is the language code for Malayalam, NOT Malay.
 SPORTS_RE = re.compile(
     r"\b(sport|sports|football|soccer|cricket|tennis|racing|formula\s*1|"
     r"motorsport|basketball|baseball|rugby|golf|boxing|mma|nba|nfl|nhl|"
@@ -45,6 +55,32 @@ class Channel:
     @property
     def is_sports(self) -> bool:
         return bool(SPORTS_RE.search(self.group) or SPORTS_RE.search(self.name))
+
+    @property
+    def languages(self) -> tuple[str, ...]:
+        match = LANGUAGE_RE.search(self.extinf)
+        if not match:
+            return ()
+        raw = next((value for value in match.groups() if value is not None), "")
+        return tuple(
+            code.strip().casefold().replace("_", "-")
+            for code in re.split(r"[;,|/]+", raw)
+            if code.strip()
+        )
+
+    @property
+    def is_preferred_language(self) -> bool:
+        # An unknown language is not evidence that a channel broadcasts
+        # in English or Malay. Avoid country/name-based guesses.
+        for language in self.languages:
+            canonical = re.sub(r"\s*\([^)]*\)\s*$", "", language).strip()
+            if canonical in ALLOWED_LANGUAGES:
+                return True
+            # Accept ISO tags such as en-US and ms-MY without accepting
+            # unrelated full language names (e.g. Malayalam or Malaysian).
+            if canonical.split("-", 1)[0] in ALLOWED_LANGUAGES:
+                return True
+        return False
 
 
 def is_http_url(value: str) -> bool:
@@ -161,6 +197,8 @@ def build() -> tuple[int, int, int]:
     combined: list[Channel] = []
     seen_urls: set[str] = set()
     sources_loaded = 0
+    language_filtered_out = 0
+    missing_language_metadata = 0
 
     for source in sources:
         try:
@@ -169,18 +207,30 @@ def build() -> tuple[int, int, int]:
                 raise ValueError("No valid channel entries in source")
             accepted = 0
             for channel in parsed:
+                if not channel.is_preferred_language:
+                    language_filtered_out += 1
+                    if not channel.languages:
+                        missing_language_metadata += 1
+                    continue
                 if channel.url in seen_urls:
                     continue
                 seen_urls.add(channel.url)
                 combined.append(channel)
                 accepted += 1
             sources_loaded += 1
-            LOG.info("Source %s: %d parsed, %d unique streams", source, len(parsed), accepted)
+            LOG.info(
+                "Source %s: %d parsed, %d English/Malay unique streams",
+                source,
+                len(parsed),
+                accepted,
+            )
         except (RuntimeError, ValueError, OSError) as exc:
             LOG.error("Source skipped: %s", exc)
 
     if not combined:
-        raise RuntimeError("All IPTV sources failed or returned no valid channels; refusing to publish empty files")
+        raise RuntimeError(
+            "No English/Malay language-tagged streams found; refusing to publish empty files"
+        )
 
     # Make sports easy to find in players while retaining original group metadata.
     combined.sort(key=lambda channel: (not channel.is_sports, channel.group.casefold(), channel.name.casefold()))
@@ -191,7 +241,15 @@ def build() -> tuple[int, int, int]:
     write_m3u(OUTPUT_DIRECTORY / "sports.m3u", sports)
     write_txt(OUTPUT_DIRECTORY / "result.txt", combined)
 
-    LOG.info("Generated %d streams (%d sports) from %d feeds", len(combined), len(sports), sources_loaded)
+    LOG.info(
+        "Generated %d English/Malay streams (%d sports) from %d feeds; "
+        "excluded %d other/unknown-language entries (%d missing language metadata)",
+        len(combined),
+        len(sports),
+        sources_loaded,
+        language_filtered_out,
+        missing_language_metadata,
+    )
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary_path:
         with open(summary_path, "a", encoding="utf-8") as handle:
@@ -200,6 +258,9 @@ def build() -> tuple[int, int, int]:
                 f"Fetched **{sources_loaded}/{len(sources)}** feeds, "
                 f"collected **{len(combined):,}** unique stream URLs, "
                 f"including **{len(sports):,}** sports entries.\n\n"
+                f"Excluded **{language_filtered_out:,}** foreign or unknown-language entries "
+                f"({missing_language_metadata:,} without language tags).\n\n"
+                "Only channels explicitly tagged English or Malay are included. "
                 "Playlist URLs may still be restricted by location or provider.\n\n"
             )
     return sources_loaded, len(combined), len(sports)
