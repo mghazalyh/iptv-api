@@ -14,6 +14,7 @@ MAX_RELEASE_ASSET_BYTES = 2 * 1024 * 1024 * 1024 - 1
 MAX_PAGES_SITE_BYTES = 1024 * 1024 * 1024
 
 OPTIONAL_ASSETS = {
+    "sports.m3u": "sports.m3u",
     "ipv4/result.txt": "ipv4.txt",
     "ipv4/result.m3u": "ipv4.m3u",
     "ipv6/result.txt": "ipv6.txt",
@@ -44,6 +45,7 @@ PAGE_ASSET_GROUPS = (
         "description": "包含所有可用频道。 / Includes all available channels.",
         "assets": (
             ("result.m3u", "M3U", "完整播放列表", "Complete playlist"),
+            ("sports.m3u", "M3U", "体育频道", "Sports playlist"),
             ("result.txt", "TXT", "完整文本列表", "Complete text list"),
         ),
     },
@@ -93,6 +95,7 @@ REPOSITORY_PATTERN = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 RELEASE_TAG_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 DEFAULT_PAGE_FAVICON = Path(__file__).resolve().parent.parent / "static/images/favicon.svg"
 PREVIEWABLE_PAGE_ASSETS = {
+    "sports.m3u",
     "result.m3u",
     "result.txt",
     "ipv4.m3u",
